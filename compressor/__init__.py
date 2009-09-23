@@ -155,8 +155,6 @@ class Compressor(object):
 
     def save_file(self):
         filename = "%s/%s" % (settings.MEDIA_ROOT.rstrip('/'), self.new_filepath)
-        if os.path.exists(filename):
-            return False
         dirname = os.path.dirname(filename)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
