@@ -61,9 +61,11 @@ def exe_exists(program):
 
 class Compressor(object):
 
-    def __init__(self, content, ouput_prefix="compressed", xhtml=False):
+    def __init__(self, content, ouput_prefix="compressed", 
+                 xhtml=False,   output_filename=None):
         self.content = content
-        self.ouput_prefix = ouput_prefix
+        self.ouput_prefix    = ouput_prefix
+        self.output_filename = output_filename
         self.split_content = []
         self.soup = BeautifulSoup(self.content)
         self.xhtml = xhtml
@@ -143,7 +145,11 @@ class Compressor(object):
 
     @property
     def new_filepath(self):
-        filename = "".join([self.hash, self.extension])
+        if self.output_filename:
+            filename = self.output_filename
+        else:
+            filename = self.hash
+        filename = "".join([filename, self.extension])
         filepath = "%s/%s/%s" % (settings.OUTPUT_DIR.strip('/'), self.ouput_prefix, filename)
         return filepath
 
@@ -183,13 +189,13 @@ class Compressor(object):
 
 class CssCompressor(Compressor):
 
-    def __init__(self, content, ouput_prefix="css", xhtml=False):
+    def __init__(self, content, ouput_prefix="css", xhtml=False, output_filename=None):
         self.extension = ".css"
         self.template_name = "compressor/css.html"
         self.filters = ['compressor.filters.css_default.CssAbsoluteFilter', 'compressor.filters.css_default.CssMediaFilter']
         self.filters.extend(settings.COMPRESS_CSS_FILTERS)
         self.type = 'css'
-        super(CssCompressor, self).__init__(content, ouput_prefix, xhtml)
+        super(CssCompressor, self).__init__(content, ouput_prefix, xhtml, output_filename)
         
     def compile(self,filename,compiler):
         """ Runs compiler on given file. 

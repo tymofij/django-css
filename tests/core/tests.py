@@ -150,6 +150,18 @@ class CompressorTestCase(TestCase):
         if os.path.exists(self.ccssFile):
             os.remove(self.ccssFile)
 
+    def test_css_custom_output(self):
+        t = Template("""
+        {% load compress %}
+        {% compress css as main %}
+        <style type="text/css">body {background: yellow;}</style>
+        {% endcompress %}
+        """)
+        output = u'<link rel="stylesheet" href="/media/CACHE/css/main.css" type="text/css">'
+        self.assertEqual(output.strip(), t.render(Context({})).strip())
+        if os.path.exists(self.ccssFile):
+            os.remove(self.ccssFile)
+
     def test_js_split(self):
         out = [
             {'filename': os.path.join(settings.MEDIA_ROOT, u'js/one.js'), 

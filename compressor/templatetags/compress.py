@@ -7,15 +7,16 @@ from compressor.conf import settings
 register = template.Library()
 
 class CompressorNode(template.Node):
-    def __init__(self, nodelist, kind=None, xhtml=False):
+    def __init__(self, nodelist, kind=None, xhtml=False, output_filename=None):
         self.nodelist = nodelist
         self.kind = kind
         self.xhtml = xhtml
+        self.output_filename = output_filename
 
     def render(self, context):
         content = self.nodelist.render(context)
         if self.kind == 'css':
-            compressor = CssCompressor(content, xhtml=self.xhtml)
+            compressor = CssCompressor(content, xhtml=self.xhtml, output_filename=self.output_filename)
         if self.kind == 'js':
             compressor = JsCompressor(content, xhtml=self.xhtml)
         in_cache = cache.get(compressor.cachekey)
@@ -70,8 +71,8 @@ def compress(parser, token):
 
     args = token.split_contents()
 
-    if not (len(args) == 2 or len(args) == 3):
-        raise template.TemplateSyntaxError("%r tag requires either 1, 3 or 5 arguments." % args[0])
+    if len(args) not in range(2,6):
+        raise template.TemplateSyntaxError("%r tag requires 1-3 arguments." % args[0])
 
     kind = args[1]
     if not kind in ['css', 'js']:
@@ -81,4 +82,10 @@ def compress(parser, token):
         xhtml = args[2] == "xhtml"
     except:
         xhtml = False
-    return CompressorNode(nodelist, kind, xhtml)
+        
+    if args[-2] == 'as':
+        output_filename = args[-1]
+    else:
+        output_filename = None    
+        
+    return CompressorNode(nodelist, kind, xhtml, output_filename)
