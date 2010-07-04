@@ -18,7 +18,7 @@ class CompressorNode(template.Node):
         if self.kind == 'css':
             compressor = CssCompressor(content, xhtml=self.xhtml, output_filename=self.output_filename)
         if self.kind == 'js':
-            compressor = JsCompressor(content, xhtml=self.xhtml)
+            compressor = JsCompressor(content, xhtml=self.xhtml, output_filename=self.output_filename)
         in_cache = cache.get(compressor.cachekey)
         if in_cache: 
             return in_cache

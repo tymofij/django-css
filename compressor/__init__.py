@@ -277,12 +277,12 @@ class CssCompressor(Compressor):
 
 class JsCompressor(Compressor):
 
-    def __init__(self, content, ouput_prefix="js", xhtml=False):
+    def __init__(self, content, ouput_prefix="js", xhtml=False,  output_filename=None):
         self.extension = ".js"
         self.template_name = "compressor/js.html"
         self.filters = settings.COMPRESS_JS_FILTERS
         self.type = 'js'
-        super(JsCompressor, self).__init__(content, ouput_prefix, xhtml)
+        super(JsCompressor, self).__init__(content, ouput_prefix, xhtml,  output_filename)
 
     def split_contents(self):
         if self.split_content:
