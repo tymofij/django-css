@@ -32,7 +32,7 @@ def pythonic_compile(fancy_css, ext):
     if not pythoncmd:
         raise PythonicCompilerNotFound
     module,func = pythoncmd.split('.')
-    return getattr(__import__(module),func)(fancy_css)     
+    return getattr(__import__(module),func)(fancy_css)
 
 
 def get_hexdigest(plaintext):
@@ -61,7 +61,7 @@ def exe_exists(program):
 
 class Compressor(object):
 
-    def __init__(self, content, ouput_prefix="compressed", 
+    def __init__(self, content, ouput_prefix="compressed",
                  xhtml=False,   output_filename=None):
         self.content = content
         self.ouput_prefix    = ouput_prefix
@@ -101,17 +101,17 @@ class Compressor(object):
         """
         if getattr(self, '_hunks', ''):
             return self._hunks
-            
+
         self._hunks = []
         for item in self.split_contents():
             filename = item.get('filename')
             data     = item.get('data')
             if not data:
                 data = open(filename, 'rb').read()
-            if self.filters:                    
+            if self.filters:
                 data = self.filter(data, 'input', **item)
             self._hunks.append(data)
-                    
+
         return self._hunks
 
     def concat(self):
@@ -168,21 +168,22 @@ class Compressor(object):
             return content
         if not self.split_content:
             self.split_contents()
-        
+
         if self.xhtml:
             return os.linesep.join([unicode(i['elem']) for i in self.split_content])
         else:
-            return os.linesep.join([re.sub("\s?/>",">",unicode(i['elem'])) for i in self.split_content]) 
-        
+            return os.linesep.join([re.sub("\s?/>",">",unicode(i['elem'])) for i in self.split_content])
+
     def output(self):
         if not settings.COMPRESS:
             return self.return_compiled_content(self.content)
         url = "%s/%s" % (settings.MEDIA_URL.rstrip('/'), self.new_filepath)
         self.save_file()
+        from django.template import Context
         context = getattr(self, 'extra_context', {})
         context['url'] = url
         context['xhtml'] = self.xhtml
-        return render_to_string(self.template_name, context)
+        return render_to_string(self.template_name, context, Context(autoescape=False))
 
 
 class CssCompressor(Compressor):
@@ -194,9 +195,9 @@ class CssCompressor(Compressor):
         self.filters.extend(settings.COMPRESS_CSS_FILTERS)
         self.type = 'css'
         super(CssCompressor, self).__init__(content, ouput_prefix, xhtml, output_filename)
-        
+
     def compile(self,filename,compiler):
-        """ Runs compiler on given file. 
+        """ Runs compiler on given file.
             Results are expected to appear nearby, same name, .css extension """
         try:
             bin = compiler['binary_path']
@@ -211,8 +212,8 @@ class CssCompressor(Compressor):
             if not err:
                 err = 'Invalid command to CSS compiler: %s' % command
             raise Exception(err)
-    
-    
+
+
     def split_contents(self):
         """ Iterates over the elements in the block """
         if self.split_content:
@@ -224,15 +225,15 @@ class CssCompressor(Compressor):
                 path, ext = os.path.splitext(filename)
                 if ext in settings.COMPILER_FORMATS.keys():
                     # that thing can be compiled
-                
+
                     try:
                         css = pythonic_compile(open(filename).read(), ext)
                         self.split_content.append({'data': css, 'elem': elem, 'filename': filename})
                         continue
                     except PythonicCompilerNotFound:
                         pass
-                        
-                    # let's run binary    
+
+                    # let's run binary
                     if self.recompile(filename):
                         self.compile(path,settings.COMPILER_FORMATS[ext])
                     # filename and elem are fiddled to have link to plain .css file
@@ -245,7 +246,7 @@ class CssCompressor(Compressor):
                     if django_settings.DEBUG:
                         raise
             if elem.name == 'style':
-                data = elem.string            
+                data = elem.string
                 elem_type = elem.get('type', '').lower()
                 if elem_type and elem_type != "text/css":
                     # it has to be preprocessed
@@ -256,14 +257,14 @@ class CssCompressor(Compressor):
                     # do we really need a dot in COMPILER_FORMATS keys?
                     ext = '.'+elem_type
                     data = pythonic_compile(data, ext)
-                    
+
                 self.split_content.append({'data': data, 'elem': elem})
-                
+
         return self.split_content
-    
+
     @staticmethod
     def recompile(filename):
-        """ Needed for CCS Compilers, 
+        """ Needed for CCS Compilers,
             returns True when file needs recompiling """
         path, ext = os.path.splitext(filename)
         compiled_filename = path + '.css'
